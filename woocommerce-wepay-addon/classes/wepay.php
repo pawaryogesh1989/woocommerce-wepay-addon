@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2013-2015 WePay, Inc. <api@wepay.com>
  *
@@ -20,35 +21,35 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
 class WePay
 {
+
     /**
      * Version number - sent in user agent string
      */
-    const VERSION = '0.3.0';
+    const VERSION = '0.3.1';
 
     /**
      * Scope fields
      * Passed into Wepay::getAuthorizationUri as array
      */
-    const SCOPE_MANAGE_ACCOUNTS      = 'manage_accounts';      // Open and interact with accounts
-    const SCOPE_COLLECT_PAYMENTS     = 'collect_payments';     // Create and interact with checkouts
-    const SCOPE_VIEW_USER            = 'view_user';            // Get details about authenticated user
-    const SCOPE_PREAPPROVE_PAYMENTS  = 'preapprove_payments';  // Create and interact with preapprovals
+    const SCOPE_MANAGE_ACCOUNTS = 'manage_accounts';      // Open and interact with accounts
+    const SCOPE_COLLECT_PAYMENTS = 'collect_payments';     // Create and interact with checkouts
+    const SCOPE_VIEW_USER = 'view_user';            // Get details about authenticated user
+    const SCOPE_PREAPPROVE_PAYMENTS = 'preapprove_payments';  // Create and interact with preapprovals
     const SCOPE_MANAGE_SUBSCRIPTIONS = 'manage_subscriptions'; // Subscriptions
-    const SCOPE_SEND_MONEY           = 'send_money';           // For withdrawals
+    const SCOPE_SEND_MONEY = 'send_money';           // For withdrawals
 
     /**
      * Application's client ID
      */
+
     private static $client_id;
 
     /**
      * Application's client secret
      */
     private static $client_secret;
-
 
     /**
      * API Version
@@ -122,14 +123,14 @@ class WePay
         $domain = self::$production ? 'https://www.wepay.com' : 'https://stage.wepay.com';
         $uri = $domain . '/v2/oauth2/authorize?';
         $uri .= http_build_query(array(
-            'client_id'    => self::$client_id,
+            'client_id' => self::$client_id,
             'redirect_uri' => $redirect_uri,
-            'scope'        => implode(',', $scope),
-            'state'        => empty($options['state'])        ? '' : $options['state'],
-            'user_name'    => empty($options['user_name'])    ? '' : $options['user_name'],
-            'user_email'   => empty($options['user_email'])   ? '' : $options['user_email'],
+            'scope' => implode(',', $scope),
+            'state' => empty($options['state']) ? '' : $options['state'],
+            'user_name' => empty($options['user_name']) ? '' : $options['user_name'],
+            'user_email' => empty($options['user_email']) ? '' : $options['user_email'],
             'user_country' => empty($options['user_country']) ? '' : $options['user_country'],
-        ), '', '&');
+            ), '', '&');
 
         return $uri;
     }
@@ -157,11 +158,11 @@ class WePay
     public static function getToken($code, $redirect_uri)
     {
         $params = (array(
-            'client_id'     => self::$client_id,
+            'client_id' => self::$client_id,
             'client_secret' => self::$client_secret,
-            'redirect_uri'  => $redirect_uri,
-            'code'          => $code,
-            'state'         => '', // do not hardcode
+            'redirect_uri' => $redirect_uri,
+            'code' => $code,
+            'state' => '', // do not hardcode
         ));
         $result = self::make_request('oauth2/token', $params);
         return $result;
@@ -179,10 +180,10 @@ class WePay
         if (self::$production !== null) {
             throw new RuntimeException('API mode has already been set.');
         }
-        self::$production    = true;
-        self::$client_id     = $client_id;
+        self::$production = true;
+        self::$client_id = $client_id;
         self::$client_secret = $client_secret;
-        self::$api_version   = $api_version;
+        self::$api_version = $api_version;
     }
 
     /**
@@ -197,10 +198,10 @@ class WePay
         if (self::$production !== null) {
             throw new RuntimeException('API mode has already been set.');
         }
-        self::$production    = false;
-        self::$client_id     = $client_id;
+        self::$production = false;
+        self::$client_id = $client_id;
         self::$client_secret = $client_secret;
-        self::$api_version   = $api_version;
+        self::$api_version = $api_version;
     }
 
     /**
@@ -259,7 +260,6 @@ class WePay
     {
         self::$ch = curl_init();
         $headers = array_merge(array("Content-Type: application/json"), $headers); // always pass the correct Content-Type header
-
         // send Api Version header
         if (!empty(self::$api_version)) {
             $headers[] = "Api-Version: " . self::$api_version;
@@ -270,7 +270,6 @@ class WePay
         curl_setopt(self::$ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt(self::$ch, CURLOPT_TIMEOUT, 30); // 30-second timeout, adjust to taste
         curl_setopt(self::$ch, CURLOPT_POST, !empty($values)); // WePay's API is not strictly RESTful, so all requests are sent as POST unless there are no request values
-
         // Force TLS 1.2 connections
         curl_setopt(self::$ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt(self::$ch, CURLOPT_SSL_VERIFYHOST, 2);
@@ -316,18 +315,28 @@ class WePay
 
     /**
      * Make API calls against authenticated user
-     * @param  string         $endpoint - API call to make (ex. 'user', 'account/find')
-     * @param  array          $values   - Associative array of values to send in API call
+     * @param  string         $endpoint     - API call to make (ex. 'user', 'account/find')
+     * @param  array          $values       - Associative array of values to send in API call
+     * @param  string         $risk_token   - WePay-supplied risk token associated with this API call
+     * @param  string         $client_ip    - Client's IP address associated with this API call
      * @return StdClass
      * @throws WePayException on failure
      * @throws Exception      on catastrophic failure (non-WePay-specific cURL errors)
      */
-    public function request($endpoint, array $values = array())
+    public function request($endpoint, array $values = array(), $risk_token = null, $client_ip = null)
     {
         $headers = array();
 
         if ($this->token) { // if we have an access_token, add it to the Authorization header
             $headers[] = "Authorization: Bearer $this->token";
+        }
+
+        if ($risk_token) { // if we have a risk_token, add it to the WePay-Risk-Token header
+            $headers[] = "WePay-Risk-Token: " . $risk_token;
+        }
+
+        if ($client_ip) { // if we have a client_ip, add it to the Client-IP header
+            $headers[] = "Client-IP: " . $client_ip;
         }
 
         $result = self::make_request($endpoint, $values, $headers);
@@ -353,6 +362,7 @@ class WePay
  */
 class WePayException extends Exception
 {
+
     public function __construct($description = '', $http_code = FALSE, $response = FALSE, $code = 0, $previous = NULL)
     {
         $this->response = $response;
@@ -369,6 +379,18 @@ class WePayException extends Exception
         }
     }
 }
-class WePayRequestException extends WePayException {}
-class WePayPermissionException extends WePayException {}
-class WePayServerException extends WePayException {}
+
+class WePayRequestException extends WePayException
+{
+    
+}
+
+class WePayPermissionException extends WePayException
+{
+    
+}
+
+class WePayServerException extends WePayException
+{
+    
+}

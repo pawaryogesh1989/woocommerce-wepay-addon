@@ -3,21 +3,38 @@
   Plugin Name: WePay Woocommerce addon
   Plugin URI: http://clariontechnologies.co.in
   Description: This extension allows you to accept payments in WooCommerce via WePay Payment Gateway.
-  Version: 1.0.0
+  Version: 2.0.0
   Author: Yogesh Pawar, Clarion Technologies
   Author URI: http://clariontechnologies.co.in
  */
 
 require'classes/wepay.php';
 
-function woocommerce_wepay_payment_init() {
+/**
+ * 
+ * @return typeFunction to add our Payment Option in WooCommerce
+ */
+function woocommerce_wepay_payment_init()
+{
 
-    if (!class_exists('WC_Payment_Gateway'))
+    /**
+     * Check if WooCommerce payment gateway class exists
+     */
+    if (!class_exists('WC_Payment_Gateway')) {
         return;
+    }
 
-    class WC_WePay_Gateway extends WC_Payment_Gateway {
+    /**
+     * We Pay Payment Class
+     */
+    class WC_WePay_Gateway extends WC_Payment_Gateway
+    {
 
-        public function __construct() {
+        /**
+         * Constructor of the class
+         */
+        public function __construct()
+        {
 
             $this->id = 'wepay';
             $this->method_title = __('WePay', 'woocommerce');
@@ -73,7 +90,11 @@ function woocommerce_wepay_payment_init() {
             add_action('woocommerce_api_wc_wepay_gateway', array($this, 'callback'));
         }
 
-        public function init_form_fields() {
+        /**
+         * Initialise Form Fields
+         */
+        public function init_form_fields()
+        {
 
             $this->form_fields = array(
                 'enabled' => array(
@@ -182,7 +203,11 @@ function woocommerce_wepay_payment_init() {
             );
         }
 
-        public function admin_options() {
+        /**
+         * Admin Options
+         */
+        public function admin_options()
+        {
 
             if ($this->enviroment == 'production' && get_option('woocommerce_force_ssl_checkout') == 'no' && $this->enabled == 'yes') {
                 echo '<div class="error"><p>' . sprintf(__('%s WePay Sandbox testing is disabled and can performe live transactions but the <a href="%s">force SSL option</a> is disabled; your checkout is not secure! Please enable SSL and ensure your server has a valid SSL certificate.', 'woothemes'), $this->method_title, admin_url('admin.php?page=wc-settings&tab=checkout')) . '</p></div>';
@@ -203,13 +228,21 @@ function woocommerce_wepay_payment_init() {
             }
         }
 
-        public function process_payment($order_id) {
+        /**
+         * Process Payment
+         * @global type $woocommerce
+         * @global type $wp_rewrite
+         * @param type $order_id
+         * @return type
+         */
+        public function process_payment($order_id)
+        {
 
             global $woocommerce;
             global $wp_rewrite;
 
             $order = new WC_Order($order_id);
-            $total_amount = $order->order_total;
+            $total_amount = $order->get_total();
 
             if ($this->enviroment == "sandbox") {
                 Wepay::useStaging($this->client_id, $this->client_secret);
@@ -246,7 +279,6 @@ function woocommerce_wepay_payment_init() {
                         'account_id' => $this->account_id,
                         'amount' => $total_amount,
                         'currency' => get_woocommerce_currency(),
-                        'auto_capture' => $this->auto_capture,
                         'short_description' => __(str_replace("{order_id}", $order_id, $this->short_description), "woocommerce"),
                         'type' => $this->type,
                         'hosted_checkout' => array(
@@ -268,12 +300,19 @@ function woocommerce_wepay_payment_init() {
             }
         }
 
-        public function receipt_page($order_id) {
+        /**
+         * Generate Receipt
+         * @global type $woocommerce
+         * @param type $order_id
+         * @return boolean
+         */
+        public function receipt_page($order_id)
+        {
 
             global $woocommerce;
 
             $order = new WC_Order($order_id);
-            $total_amount = $order->order_total;
+            $total_amount = $order->get_total();
 
             if ($this->enviroment == "sandbox") {
                 Wepay::useStaging($this->client_id, $this->client_secret);
@@ -298,10 +337,12 @@ function woocommerce_wepay_payment_init() {
             $wepay_checkout_url = $wepay_checkout->hosted_checkout;
 
             if (isset($error)) {
+
                 ?>
                 <h2 style="color:red">ERROR: <?php echo $error ?></h2>
                 <?php
             } else {
+
                 ?>
                 <div id="wepay_checkout_div"></div>                
                 <script type="text/javascript" src="<?php echo $this->wepay_jsdomain; ?>"></script>                
@@ -314,7 +355,12 @@ function woocommerce_wepay_payment_init() {
             return false;
         }
 
-        public function callback() {
+        /**
+         * Call back Function 
+         * @global type $woocommerce
+         */
+        public function callback()
+        {
 
             @ob_clean();
             global $woocommerce;
@@ -347,54 +393,54 @@ function woocommerce_wepay_payment_init() {
                         $order->payment_complete();
                         $order->update_status('completed');
                         $order->add_order_note(
-                                sprintf(
-                                        "%s Payment Completed with Checkout Id of '%s'", $this->method_title, $checkout_id
-                                )
+                            sprintf(
+                                "%s Payment Completed with Checkout Id of '%s'", $this->method_title, $checkout_id
+                            )
                         );
                     } elseif ($response->state == 'authorized') {
 
                         $order->payment_complete();
                         $order->update_status('completed');
                         $order->add_order_note(
-                                sprintf(
-                                        "%s Payment Completed with Checkout Id of '%s'", $this->method_title, $checkout_id
-                                )
+                            sprintf(
+                                "%s Payment Completed with Checkout Id of '%s'", $this->method_title, $checkout_id
+                            )
                         );
                     } elseif ($response->state == 'reserved') {
 
                         $order->payment_complete();
                         $order->update_status('completed');
                         $order->add_order_note(
-                                sprintf(
-                                        "%s Payment Completed with Checkout Id of '%s'", $this->method_title, $checkout_id
-                                )
+                            sprintf(
+                                "%s Payment Completed with Checkout Id of '%s'", $this->method_title, $checkout_id
+                            )
                         );
                     } elseif ($response->state == 'refunded') {
 
                         $order->payment_complete();
                         $order->update_status('refunded');
                         $order->add_order_note(
-                                sprintf(
-                                        "%s Payment Refunded with Checkout Id of '%s'", $this->method_title, $checkout_id
-                                )
+                            sprintf(
+                                "%s Payment Refunded with Checkout Id of '%s'", $this->method_title, $checkout_id
+                            )
                         );
                     } elseif ($response->state == 'cancelled') {
 
                         $order->payment_complete();
                         $order->update_status('cancelled');
                         $order->add_order_note(
-                                sprintf(
-                                        "%s Payment Cancelled with Checkout Id of '%s'", $this->method_title, $checkout_id
-                                )
+                            sprintf(
+                                "%s Payment Cancelled with Checkout Id of '%s'", $this->method_title, $checkout_id
+                            )
                         );
                     } elseif ($response->state == 'failed') {
 
                         $order->payment_complete();
                         $order->update_status('failed');
                         $order->add_order_note(
-                                sprintf(
-                                        "%s Payment Failed with Checkout Id of '%s'", $this->method_title, $checkout_id
-                                )
+                            sprintf(
+                                "%s Payment Failed with Checkout Id of '%s'", $this->method_title, $checkout_id
+                            )
                         );
                     } elseif ($response->state == 'expired') {
                         $order->update_status('pending', __('Checkouts get expired if they are still in state new after 30 minutes (ie they have been abandoned). VVPLOCKER.COM', 'woocommerce'));
@@ -415,15 +461,18 @@ function woocommerce_wepay_payment_init() {
 
             exit;
         }
-
     }
 
-    function woocommerce_add_wepay_gateway_method($methods) {
+    /**
+     * Function to add payment method
+     * @param array $methods
+     * @return string
+     */
+    function woocommerce_add_wepay_gateway_method($methods)
+    {
         $methods[] = 'WC_WePay_Gateway';
         return $methods;
     }
-
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_wepay_gateway_method');
 }
-
 add_action('plugins_loaded', 'woocommerce_wepay_payment_init', 0);

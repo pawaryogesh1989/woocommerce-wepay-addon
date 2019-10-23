@@ -1,15 +1,30 @@
 === WePay Woocommerce addon ===
 Contributors: pawaryogesh1989, clarionwpdeveloper
-Tags: Buddypress registration, widget
-Requires at least: 3.0.1
-Tested up to: 4.9.8
-Stable tag: 4.9
+Tags: WePay Woocommerce addon, wepay woocommerce, Wordpress wepay integration, Wepay, Woocomerce Wepay, wepay woocommerce, wordpress wepay, wepay wordpress, ecommerce payment, wepay payment wordpress gateway, wordpress wepay payment gateway, woocommerce wepay payment integration, woocommerce wepay payment gateway
+Requires at least: 4.6
+Tested up to: 5.2.4
+Stable tag: 5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 
 This plugin is an addon for WooCommerce to implement a payment gateway method for accepting **Credit Cards Payments** By merchants via **WePay Payment** Gateway
+
+To generate client ID, client secret, Access Token, and Account ID please visit https://developer.wepay.com/api/ and create a new account and register a new APP.
+
+== Screenshots ==
+
+1. screenshot-1 - WePay Option in Backend.
+2. screenshot-2 - WePay Configuration.
+
+== Changelog ==
+
+= 2.0.0 =
+* Fixed some minor issues
+* Updated code as per latest WePay Standards
+* Compatibility changes to make it work with latest WordPress version.
+* Code changes for PHP 7.2 version.
 
 == Installation ==
 
