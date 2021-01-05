@@ -1,9 +1,10 @@
 === WePay Woocommerce addon ===
 Contributors: pawaryogesh1989, clarionwpdeveloper
 Tags: WePay Woocommerce addon, wepay woocommerce, Wordpress wepay integration, Wepay, Woocomerce Wepay, wepay woocommerce, wordpress wepay, wepay wordpress, ecommerce payment, wepay payment wordpress gateway, wordpress wepay payment gateway, woocommerce wepay payment integration, woocommerce wepay payment gateway
-Requires at least: 4.6
-Tested up to: 5.2.4
+Requires at least: 5.0 or higher
+Tested up to: 5.6
 Stable tag: 5.0
+PHP Version: 5.6 or higher
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,6 +20,9 @@ To generate client ID, client secret, Access Token, and Account ID please visit 
 2. screenshot-2 - WePay Configuration.
 
 == Changelog ==
+
+= 3.0.0 =
+* Compatibility changes to make it work with latest WordPress version.
 
 = 2.0.0 =
 * Fixed some minor issues

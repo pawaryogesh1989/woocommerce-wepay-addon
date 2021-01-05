@@ -3,7 +3,7 @@
   Plugin Name: WePay Woocommerce addon
   Plugin URI: http://clariontechnologies.co.in
   Description: This extension allows you to accept payments in WooCommerce via WePay Payment Gateway.
-  Version: 2.0.0
+  Version: 3.0.0
   Author: Yogesh Pawar, Clarion Technologies
   Author URI: http://clariontechnologies.co.in
  */
